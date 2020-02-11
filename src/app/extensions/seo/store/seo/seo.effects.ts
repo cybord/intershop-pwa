@@ -6,10 +6,10 @@ import { MetaService } from '@ngx-meta/core';
 import { TranslateService } from '@ngx-translate/core';
 import { mapToParam, ofRoute } from 'ngrx-router';
 import { debounce, distinctUntilKeyChanged, first, map, switchMap, tap } from 'rxjs/operators';
+import { productRoute } from 'src/app/pages/product/product.route';
 
 import { ProductHelper } from 'ish-core/models/product/product.helper';
 import { SeoAttributes } from 'ish-core/models/seo-attribute/seo-attribute.model';
-import { generateProductRoute } from 'ish-core/pipes/product-route.pipe';
 import { getSelectedContentPage } from 'ish-core/store/content/pages';
 import { CategoriesActionTypes } from 'ish-core/store/shopping/categories';
 import { getSelectedCategory } from 'ish-core/store/shopping/categories/categories.selectors';
@@ -77,19 +77,19 @@ export class SeoEffects {
 
   @Effect()
   seoProduct$ = this.actions$.pipe(
-    ofRoute(['product/:sku/**', 'category/:categoryUniqueId/product/:sku/**']),
+    ofRoute(productRoute),
     switchMap(() =>
       this.store.pipe(
         select(getSelectedProduct),
         whenTruthy(),
         map(p => (ProductHelper.isVariationProduct(p) && p.productMaster()) || p),
         distinctUntilKeyChanged('sku'),
+        whenTruthy(),
         map(
-          p =>
-            p &&
-            p.seoAttributes && {
-              canonical: generateProductRoute(p, p.defaultCategory()),
-              ...p.seoAttributes,
+          product =>
+            product.seoAttributes && {
+              canonical: productRoute.generateUrl({ product }),
+              ...product.seoAttributes,
             }
         ),
         whenTruthy()

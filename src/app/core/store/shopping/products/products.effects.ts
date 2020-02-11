@@ -18,6 +18,7 @@ import {
   throttleTime,
   withLatestFrom,
 } from 'rxjs/operators';
+import { productRoute } from 'src/app/pages/product/product.route';
 
 import { ProductListingMapper } from 'ish-core/models/product-listing/product-listing.mapper';
 import { VariationProductMaster } from 'ish-core/models/product/product-variation-master.model';
@@ -32,6 +33,7 @@ import {
   mapToPayload,
   mapToPayloadProperty,
   mapToProperty,
+  whenFalsy,
   whenTruthy,
 } from 'ish-core/utils/operators';
 
@@ -214,7 +216,9 @@ export class ProductsEffects {
 
   @Effect()
   loadDefaultCategoryContextForProduct$ = this.actions$.pipe(
-    ofRoute(/^product/),
+    ofRoute(productRoute),
+    mapToParam('categoryUniqueId'),
+    whenFalsy(),
     switchMap(() =>
       this.store.pipe(
         select(productsSelectors.getSelectedProduct),
